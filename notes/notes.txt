@@ -1,0 +1,22 @@
+	for (var index = 0, length = arr.length; index < length; index++) {
+		var item = arr[index];
+	}
+
+
+	for (var key in dictionary) {
+		if (dictionary.hasOwnProperty(key)) {
+		}
+	}
+
+in googledrive, share folder with 27285370587-compute@developer.gserviceaccount.com to allow drive to json access
+
+
+WARNING: named ranges' names are conflicting with worksheet names (request worksheet name, get back data of named range of smae name)
+
+
+{"rural_stealthing":2,"setting_rural_traps":2,"climbing_walls":1,"horsemanship":1,"tracking":1,"wield_handheld_weapon_medium":2,"shoot_crossbow":2}
+
+{"wield_handheld_weapon_medium":3,"rural_stealthing":2,"setting_rural_traps":2,"climbing_walls":1,"horsemanship":1,"tracking":1,"shoot_crossbow":2}
+
+
+https://www.npmjs.com/package/webpack-auto-inject-version

@@ -1,0 +1,19 @@
+{
+	"name": "drive-json",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test_vsc": "node --nolazy --inspect-brk=5858 bin/unittest"
+	},
+	"keywords": [],
+	"author": "David Coen",
+	"license": "UNLICENSED",
+	"private": true,
+	"dependencies": {
+		"q": "^1.5.1",
+		"requestify": "^0.2.5",
+		"google-oauth-jwt": "^0.2.0",
+		"version-helper": "file:../version-helper"
+	}
+}
