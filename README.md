@@ -21,16 +21,16 @@ const VersionHelper = require('drive-json')
 markup cells contain non empty string of tokens, names, dataset, all seperated by ":"
 
 ### markup tokens
--ignore
--int
--float
--bool
--string
--sheet3rd
--sheet5th
--sheet3rdKeyValue
--array
--dataset:xxx
+- ignore
+- int
+- float
+- bool
+- string
+- sheet3rd
+- sheet5th
+- sheet3rdKeyValue
+- array
+- dataset:xxx
 
 3rd normailized
 ```

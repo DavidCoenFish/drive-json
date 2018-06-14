@@ -40,13 +40,13 @@ const getType = function(in_mimeType){
 }
 
 DataServer.prototype.getRootName = function() {
-	console.warn("DataServer.getRootName is unimplemented");
-	return undefined;
+	//console.warn("DataServer.getRootName is unimplemented");
+	return "root";
 }
 
 DataServer.prototype.getRootId = function() {
-	console.warn("DataServer.getRootId is unimplemented");
-	return undefined;
+	//console.warn("DataServer.getRootId is unimplemented");
+	return "root";
 }
 
 DataServer.prototype.getMetaDataByNameArray = function(in_input, in_dirArray) {

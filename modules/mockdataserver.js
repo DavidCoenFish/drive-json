@@ -3,32 +3,22 @@ const TypeEnum = require("./dataserver.js").TypeEnum;
 
 const MockDataServer = function(in_mockData) {
 	this.m_mockData = in_mockData;
-	this.m_rootName = undefined;
-	this.m_rootId = undefined;
-	setupRootId(this);
+	generateDefaultMetadata(this.m_mockData);
 }
 
-const setupRootId = function(in_mockDataServer){
-	var firstId = true;
-	for (var key in in_mockDataServer.m_mockData) {
-		var metaData = in_mockDataServer.m_mockData[key].metaData;
-		if (undefined === metaData){
-			continue;
+function generateDefaultMetadata(inout_mockData){
+	for (var key in inout_mockData) {
+		var metaData = inout_mockData[key].metaData;
+		if (metaData === undefined){
+			metaData = {};
 		}
-		if (true !== metaData.root) {
-			if (true === firstId){
-				firstId = false;
-				in_mockDataServer.m_rootName = metaData.name;
-				in_mockDataServer.m_rootId = metaData.id;
-			}
-			continue;
+		if (false === ("name" in metaData)){
+			metaData["name"] = key;
 		}
-		in_mockDataServer.m_rootName = metaData.name;
-		in_mockDataServer.m_rootId = metaData.id;
-		if (undefined === in_mockDataServer.m_rootId) {
-			in_mockDataServer.m_rootId = metaData.name;
+		if (false === ("id" in metaData)){
+			metaData["id"] = key;
 		}
-		return;
+		inout_mockData[key]["metaData"] = metaData;
 	}
 	return;
 }
@@ -41,7 +31,7 @@ mockdata {
 			"id" : id, // top level key xxx_id
 			"type" : type,
 			"mimeType" : mimeType,
-			"root" : true/false //?
+			"rootChild" : true/false //default true 
 		},
 		childrenArray : [], //folder children top level id xxx_id
 		data : { 
@@ -57,29 +47,11 @@ module.exports = function(in_mockData){
 }
 
 MockDataServer.prototype.getRootName = function() {
-	return this.m_rootName;
+	return "root";
 }
 
 MockDataServer.prototype.getRootId = function() {
-	return this.m_rootId;
-}
-
-MockDataServer.prototype.getIdForName = function(in_name) {
-	var keyFound = false;
-	for (var key in this.m_mockData) {
-		var metaData = this.m_mockData[key].metaData;
-		if (undefined === metaData){
-			if (key === in_name){
-				keyFound = true; 
-			}
-		} else if (in_name == metaData.name) {
-			return metaData.id;
-		}
-	}
-	if (true === keyFound){
-		return in_name;
-	}
-	return undefined;
+	return "root";
 }
 
 /*
@@ -131,7 +103,17 @@ MockDataServer.prototype.getMetaDataByID = function(in_id){
 
 MockDataServer.prototype.getFolderChildrenMetaDataArray = function(in_id){
 	var deferred = Q.defer();
-	if (in_id in this.m_mockData){
+	if (in_id === "root"){
+		var metaDataArray = [];
+		for (var key in this.m_mockData) {
+			var metaData = this.m_mockData[key].metaData;
+			if (("rootChild" in metaData) && (metaData.rootChild == false)){
+				continue;
+			}
+			metaDataArray.push(metaData);
+		}
+		deferred.resolve(metaDataArray);
+	} else if (in_id in this.m_mockData){
 		var metaDataArray = [];
 		var childrenArray = this.m_mockData[in_id].childrenArray;
 		if (null != childrenArray){ 
@@ -144,7 +126,7 @@ MockDataServer.prototype.getFolderChildrenMetaDataArray = function(in_id){
 		}
 		deferred.resolve(metaDataArray);
 	} else {
-		deferred.resolve(null);
+		deferred.resolve([]);
 	}
 
 	return deferred.promise;

@@ -13,7 +13,6 @@ module.exports.factory = function(in_dataServer){
 
 //if you start with an empty folder, consider path as absolute
 module.exports.factoryResolvePromice = function(in_baseCursor, in_path){
-	const deferred = Q.defer();
 	const newCursor = in_baseCursor.clone();
 	newCursor.pop(); // file leaf not part of path
 	const pathTokens = in_path.split("/");
@@ -22,21 +21,24 @@ module.exports.factoryResolvePromice = function(in_baseCursor, in_path){
 		newCursor.setToRoot();
 		var rootName = pathTokens.shift();
 		if (rootName !== newCursor.m_nameStack[0]){
-			console.warn("DriveCursor.resolve root folder name mismatch:" + rootName + " rootName:" + this.m_nameStack[0]);
-			return Q(newCursor);
+			return Q.reject("expected root at start of absolute path:" + in_path);
 		}
 	}
 
-	var promice = Q(newCursor);
+	var promice = Q(true);
 	for (var index = 0, total = pathTokens.length; index < total; index++) {
 		var token = pathTokens[index];
-
-		promice = newCursor.pushPromise(token).then(function(){
-			return newCursor;
-		});
+		promice = pushPromiceClosure(token, newCursor, promice);
 	}
+	return promice.then(function(){
+		return newCursor;
+	});
+}
 
-	return promice;
+function pushPromiceClosure(in_token, in_driveCursor, in_prevPromice){
+	return in_prevPromice.then(function(){
+		return in_driveCursor.pushPromise(in_token);
+	});
 }
 
 const DriveCursor = function(in_dataServer){
