@@ -27,12 +27,12 @@ module.exports.factoryResolvePromice = function(in_baseCursor, in_path){
 		}
 	}
 
-	var promice = Q(result);
+	var promice = Q(newCursor);
 	for (var index = 0, total = pathTokens.length; index < total; index++) {
 		var token = pathTokens[index];
 
-		promice = result.pushPromise(token).then(function(){
-			return result;
+		promice = newCursor.pushPromise(token).then(function(){
+			return newCursor;
 		});
 	}
 
@@ -84,11 +84,11 @@ DriveCursor.prototype.getFullPath = function(){
 
 DriveCursor.prototype.pushPromise = function(in_name){
 	if ("." === in_name){
-		return this;
+		return Q(this);
 	}
 	if (".." === in_name){
 		this.pop();
-		return this;
+		return Q(this);
 	}
 
 	//this.m_worksheet
@@ -106,7 +106,7 @@ DriveCursor.prototype.pushPromise = function(in_name){
 	return this.m_dataServer.getFolderChildrenMetaDataArray(parentId).then(function(metaDataArray){
 		var id = undefined;
 		for (var index = 0, length = metaDataArray.length; index < length; index++) {
-			var item = metaData[index];
+			var item = metaDataArray[index];
 			if (item.name !== name){
 				continue;
 			}

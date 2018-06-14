@@ -25,6 +25,9 @@ const setupRootId = function(in_mockDataServer){
 		}
 		in_mockDataServer.m_rootName = metaData.name;
 		in_mockDataServer.m_rootId = metaData.id;
+		if (undefined === in_mockDataServer.m_rootId) {
+			in_mockDataServer.m_rootId = metaData.name;
+		}
 		return;
 	}
 	return;

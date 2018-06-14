@@ -342,6 +342,7 @@ const RunChildren = function(promiseArray) {
 				},
 			"fileId00" : {
 				"metaData" : {
+					"name" : "fileId00",
 					"id" : "fileId00"
 					},
 				"data" : {
@@ -360,6 +361,7 @@ const RunChildren = function(promiseArray) {
 				},
 			"fileId1" : {
 				"metaData" : {
+					"name" : "fileId1",
 					"id" : "fileId1"
 					},
 				"data" : {
@@ -371,6 +373,7 @@ const RunChildren = function(promiseArray) {
 				},
 			"fileId01" : {
 				"metaData" : {
+					"name" : "fileId01",
 					"id" : "fileId01"
 					},
 				"data" : {
@@ -385,7 +388,7 @@ const RunChildren = function(promiseArray) {
 			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId00:toc");
 		}).then(function(driveCursor){
 			var cursor = Cursor();
-			return SheetToObject.sheet3rdToObject(dataServer, driveCursor, cursor, baseObject);
+			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
 		}).then(function(input){
 			var expected = {"foo" : { "a":1, "b":true }, "bar" : { "a":2, "b":false }, "moo" : { "a":3, "b":true }, "zoo" : { "a":4, "b":false }};
 			Test.DealTest("RunChildren", JSON.stringify(baseObject), JSON.stringify(expected));
