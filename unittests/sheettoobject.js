@@ -258,7 +258,7 @@ const RunSimpleSheet3rdKeyValue = function(promiseArray) {
 		return Q(true).then(function(){
 			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId0:toc");
 		}).then(function(driveCursor){
-			var cursor = Cursor();
+			var cursor = Cursor({"b":undefined});
 			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
 		}).then(function(input){
 			var expected = {"a" : { "b" : { "a" : "ab", "b" : "bb", "c" : "cb" } } };

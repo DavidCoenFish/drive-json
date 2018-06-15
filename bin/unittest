@@ -1,10 +1,10 @@
 const Q = require('q');
 
 var promiseArray = [];
-//require("./../unittests/cursor.js")(promiseArray);
-//require("./../unittests/drivecursor.js")(promiseArray);
+require("./../unittests/cursor.js")(promiseArray);
+require("./../unittests/drivecursor.js")(promiseArray);
 require("./../unittests/sheettoobject.js")(promiseArray);
-//require("./../unittests/util.js")(promiseArray);
+require("./../unittests/util.js")(promiseArray);
 
 console.log((new Date()).toLocaleString());
 

@@ -7,9 +7,9 @@ const TypeEnum = Object.freeze({
 /*
 in_dataSet is object (queried with the "in" keyword) a set of keywords
  */
-const Cursor = function(in_dataSet){
+const Cursor = function(in_dataSetOrUndefined){
 	this.m_stack = [];
-	this.m_dataset = in_dataSet;
+	this.m_dataset = (undefined === in_dataSetOrUndefined) ? {} : in_dataSetOrUndefined;
 	return;
 }
 
