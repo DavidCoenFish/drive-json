@@ -1,19 +1,84 @@
-const Q = require('q');
-const RequestWithJWT = require("google-oauth-jwt").requestWithJWT();
+const Q = require("q");
+const GoogleApis = require("googleapis");
+const Util = require("./util.js");
+
+function generateAuthUrlConsole(in_oAuth2Client){
+	const authUrl = in_oAuth2Client.generateAuthUrl({
+		access_type: "offline",
+		scope: ["https://www.googleapis.com/auth/drive.metadata.readonly"]
+		});
+	console.log('Get credentials string by visiting this url:', authUrl);
+}
+
+//Util.readFilePromise
+//https://developers.google.com/drive/api/v3/quickstart/nodejs
+module.exports.createOAutho2ClientPromise = function(in_pathClientSecretJson, in_pathCredentialsText){
+	var credentials = undefined;
+	var oAuth2Client = undefined;
+	return Q(true).then(function(){
+		return Util.readFilePromise(in_pathClientSecretJson);
+	}).then(function(in_content){
+		const clientSecret = JSON.parse(in_content);
+		oAuth2Client = new GoogleApis.google.auth.OAuth2(
+			clientSecret.installed.client_id,
+			clientSecret.installed.client_secret,
+			clientSecret.installed.redirect_uris[0]);
+		return;
+	}).then(function(){
+		if (undefined !== in_pathCredentialsText) {
+			return Util.readFilePromise(in_pathCredentialsText);
+		}
+		generateAuthUrlConsole(oAuth2Client);
+		return;
+	}, function(in_error){
+		console.log('error:', in_error);
+		generateAuthUrlConsole(oAuth2Client);
+		return;
+	}).then(function(in_credentialsString){
+		return dealAuth2ClientCredentials(in_credentialsString, oAuth2Client);
+	});
+}
+
+function dealAuth2ClientCredentials(in_credentialsString, in_oAuth2Client){
+	if (undefined === in_credentialsString){
+		return undefined;
+	}
+	return Q(true).then(function(){
+		return in_oAuth2Client.getToken(in_credentialsString)
+	}).then(function(in_credentials){
+		oAuth2Client.setCredentials(in_credentials);
+		return oAuth2Client;
+	});
+}
 
 /*
-	email: '27285370587-compute@developer.gserviceaccount.com',
-	keyFile: './data/key.pem',
+const drive = GoogleApis.google.drive({version: 'v3', auth});
+  drive.files.list({
+    pageSize: 10,
+    fields: 'nextPageToken, files(id, name)',
+  }
+
  */
-module.exports.getFolderMetaDataByName = function(in_folderName, in_dataCache, in_email, in_keyFile){
+module.exports.getFolderMetaDataByName = function(in_folderName, in_dataCache, in_authorization){
 	const in_folderMetaDataMap = in_dataCache.m_folderMetaDataMap;
-	//console.log("getFolderMetaDataByName:" + in_folderName);
+	console.log("getFolderMetaDataByName:" + in_folderName);
 	var deferred = Q.defer();
 	if (in_folderName in in_folderMetaDataMap){
 		//console.log("gFolderMetaDataMap found in_folderName:" + in_folderName);
 		deferred.resolve(in_folderMetaDataMap[in_folderName]);
 	} else {
+
+		const drive = GoogleApis.google.drive({
+			version: "v3",
+			auth: in_authorization
+			});
 		var name = encodeURI(in_folderName, "UTF-8");
+		drive.files.list({
+			fields: "files(id, name, mimeType)",
+			q: "mimeType 'applicatio/vnd.google-apps.folder' and name '" + name + "'"
+		}).then(
+		//files?q=mimeType%3D'application%2Fvnd.google-apps.folder'+and+name%3D'" + name + "'&fields=files(id%2CmimeType%2Cname)",
+		//var name = encodeURI(in_folderName, "UTF-8");
 		RequestWithJWT({
 			url: "https://www.googleapis.com/drive/v3/files?q=mimeType%3D'application%2Fvnd.google-apps.folder'+and+name%3D'" + name + "'&fields=files(id%2CmimeType%2Cname)",
 			jwt: {
@@ -44,7 +109,7 @@ module.exports.getFolderMetaDataByName = function(in_folderName, in_dataCache, i
 
 				var arrayPromice = [];
 				for (var index = 0; index < data.files.length; ++index){
-					arrayPromice.push(getMetaData(data.files[index].id, in_dataCache));
+					arrayPromice.push(getMetaData(data.files[index].id, in_dataCache, in_authorization));
 				}
 
 				Q.allSettled(arrayPromice).then(function(input){ 
@@ -77,7 +142,7 @@ module.exports.getFolderMetaDataByName = function(in_folderName, in_dataCache, i
 	return deferred.promise;
 }
 
-const getMetaData = function(in_id, in_dataCache, in_email, in_keyFile){
+const getMetaData = function(in_id, in_dataCache, in_authorization){
 	const in_metaDataDataMap = in_dataCache.m_metaDataDataMap;
 	//console.log("getMetaData:" + in_id);
 	var deferred = Q.defer();
@@ -129,13 +194,11 @@ module.exports.getChildMetaDataByName = function(in_folderID, in_childName, in_d
 	});
 }
 
-const gChildrenOfFolderDataMap = {};
-const getChildrenOfFolder = function(in_folderID, in_dataCache, in_email, in_keyFile){
+const getChildrenOfFolder = function(in_folderID, in_dataCache, in_authorization){
 	const in_childrenOfFolderDataMap = in_dataCache.m_childrenOfFolderDataMap;
 	//console.log("getChildrenOfFolder:" + in_folderID);
 	var deferred = Q.defer();
 	if (in_folderID in in_childrenOfFolderDataMap){
-		//console.log("gChildrenOfFolderDataMap found in_folderID:" + in_folderID);
 		deferred.resolve(in_childrenOfFolderDataMap[in_folderID]);
 	} else {
 		RequestWithJWT({
@@ -146,6 +209,7 @@ const getChildrenOfFolder = function(in_folderID, in_dataCache, in_email, in_key
 				scopes: ['https://www.googleapis.com/auth/drive.readonly']
 			}
 		}, function (error, response, body) {
+			console.log("getChildrenOfFolder in_folderID:" + in_folderID + " body:" + body);
 			if (error != null){
 				deferred.reject("problem finding children of folder:" + in_folderID + " error:" +  error);
 				return;
@@ -159,7 +223,7 @@ const getChildrenOfFolder = function(in_folderID, in_dataCache, in_email, in_key
 			try {
 				var arrayPromice = [];
 				for (var index = 0; index < data.files.length; ++index){
-					arrayPromice.push(getMetaData(data.files[index].id, in_dataCache));
+					arrayPromice.push(getMetaData(data.files[index].id, in_dataCache, in_authorization));
 				}
 
 				Q.allSettled(arrayPromice).then(function(input){ 
@@ -190,7 +254,7 @@ module.exports.getChildrenOfFolder = getChildrenOfFolder;
 /*
 https://developers.google.com/apis-explorer/#p/sheets/v4/sheets.spreadsheets.values.get?spreadsheetId=1WX1-l_9jh3JddGzRuxUSC_zU0NirbyJk-tJyugbJagI&range=character_rules&fields=values&_h=2&
 */
-module.exports.getSpreadsheetWorksheet = function(in_spreadsheetID, in_worksheetName, in_dataCache, in_email, in_keyFile){
+module.exports.getSpreadsheetWorksheet = function(in_spreadsheetID, in_worksheetName, in_dataCache, in_authorization){
 	const in_spreadsheetWorksheetDataMap = in_dataCache.m_spreadsheetWorksheetDataMap;
 	//console.log("getSpreadsheetWorksheet spreadsheet:" + in_spreadsheetID + " worksheet:" + in_worksheetName);
 	const key = in_spreadsheetID + "_" + in_worksheetName;

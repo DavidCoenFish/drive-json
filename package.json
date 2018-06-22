@@ -4,7 +4,9 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"test_vsc": "node --nolazy --inspect-brk=5858 bin/unittest"
+		"test_vsc": "node --nolazy --inspect-brk=5858 bin/unittest",
+		"cmd_dev": "node --nolazy --inspect-brk=5858 bin/drive-json -c ./../credentials_drive_json.txt -s ./../client_secret_drive_json.json",
+		"cmd_test": "node --nolazy --inspect-brk=5858 bin/drive-json -e 27285370587-compute@developer.gserviceaccount.com -k ./../key.pem -5 /root/test/data:toc -o ./output/test.json"
 	},
 	"keywords": [],
 	"author": "David Coen",
@@ -13,7 +15,7 @@
 	"dependencies": {
 		"q": "^1.5.1",
 		"requestify": "^0.2.5",
-		"google-oauth-jwt": "^0.2.0",
+		"googleapis": "^32.0.0",
 		"version-helper": "file:../version-helper"
 	}
 }

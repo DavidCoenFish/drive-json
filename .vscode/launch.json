@@ -17,6 +17,34 @@
 				"test_vsc"
 			],
 			"port": 5858
-		}
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "cmd line dev",
+			"runtimeExecutable": "npm",
+			"windows": {
+				"runtimeExecutable": "npm.cmd"
+			},
+			"runtimeArgs": [
+				"run-script",
+				"cmd_dev"
+			],
+			"port": 5858
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "cmd line test",
+			"runtimeExecutable": "npm",
+			"windows": {
+				"runtimeExecutable": "npm.cmd"
+			},
+			"runtimeArgs": [
+				"run-script",
+				"cmd_test"
+			],
+			"port": 5858
+		},
 	]
 }

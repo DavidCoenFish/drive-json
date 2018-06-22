@@ -1,8 +1,12 @@
 const Q = require('q');
 const GoogleHelper = require("./googlehelper.js");
 
-module.exports.factory = function(in_email, in_keyFile) {
-	return new DataServer(in_email, in_keyFile);
+module.exports.authorizationFactoryPromise = function(in_pathClientSecretJson, in_pathCredentialsText){
+	return GoogleHelper.createOAutho2ClientPromise(in_pathClientSecretJson, in_pathCredentialsText);
+}
+
+module.exports.factory = function(in_authorization) {
+	return new DataServer(in_authorization);
 }
 
 const TypeEnum = Object.freeze({
@@ -11,22 +15,16 @@ const TypeEnum = Object.freeze({
 	"spreadsheet":2 //"mimeType": "application/vnd.google-apps.spreadsheet"
 	//"doc"?
 });
+module.exports.TypeEnum = TypeEnum;
 
-const DataServer = function(in_email, in_keyFile) {
+const DataServer = function(in_authorization) {
 	this.m_folderMetaDataMap = {};
 	this.m_metaDataDataMap = {};
 	this.m_childrenOfFolderDataMap = {};
 	this.m_spreadsheetWorksheetDataMap = {};
 	this.m_test = 0;
-	this.m_email = in_email;
-	this.m_keyFile = in_keyFile;
+	this.m_authorization = in_authorization;
 }
-
-module.exports = function(){
-	var dataServer = new DataServer();
-	return dataServer;
-}
-module.exports.TypeEnum = TypeEnum;
 
 const getType = function(in_mimeType){
 	//var mimeType = in_metaData.mimeType;
@@ -58,7 +56,7 @@ DataServer.prototype.getMetaDataByNameArray = function(in_input, in_dirArray) {
 	var that = this;
 	var childName = in_dirArray.shift();
 	return Q.delay(100).then(function(){
-		return GoogleHelper.getChildMetaDataByName(in_input.id, childName, that, that.m_email, that.m_keyFile);
+		return GoogleHelper.getChildMetaDataByName(in_input.id, childName, that, that.m_authorization);
 	}).then(function(input){
 		return that.getMetaDataByNameArray(input, in_dirArray);
 	})
@@ -83,7 +81,7 @@ DataServer.prototype.getFolderMetaDataByName = function(in_name) {
 	var that = this;
 
 	return Q.delay(100).then(function(){
-		return GoogleHelper.getFolderMetaDataByName(rootDir, that, that.m_email, that.m_keyFile);
+		return GoogleHelper.getFolderMetaDataByName(rootDir, that, that.m_authorization);
 	}).then(function(input){
 		return that.getMetaDataByNameArray(input, dirArray);
 	}).then(function(input){
@@ -108,7 +106,7 @@ resolve object {
 DataServer.prototype.getMetaDataByID = function(in_id){
 	var that = this;
 	return Q.delay(100).then(function(){
-		return GoogleHelper.getMetaData(in_id, that, that.m_email, that.m_keyFile);
+		return GoogleHelper.getMetaData(in_id, that, that.m_authorization);
 	}).then(function(input){
 		if (input != null){
 			input.type = getType(input.mimeType);
@@ -120,7 +118,7 @@ DataServer.prototype.getMetaDataByID = function(in_id){
 DataServer.prototype.getFolderChildrenMetaDataArray = function(in_id){
 	var that = this;
 	return Q.delay(100).then(function(){
-		return GoogleHelper.getChildrenOfFolder(in_id, that, that.m_email, that.m_keyFile);
+		return GoogleHelper.getChildrenOfFolder(in_id, that, that.m_authorization);
 	}).then(function(input){
 		for (var index = 0, length = input.length; index < length; index++) {
 			var item = input[index];
@@ -135,7 +133,7 @@ DataServer.prototype.getFolderChildrenMetaDataArray = function(in_id){
 DataServer.prototype.getSpreadsheetWorksheetData = function(in_id, in_worksheetName){
 	var that = this;
 	return Q.delay(100).then(function(){
-		return GoogleHelper.getSpreadsheetWorksheet(in_id, in_worksheetName, that, that.m_email, that.m_keyFile);
+		return GoogleHelper.getSpreadsheetWorksheet(in_id, in_worksheetName, that, that.m_authorization);
 	});
 };
 
