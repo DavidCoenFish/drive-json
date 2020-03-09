@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const FileSystem = require("fs");
-const Q = require("q");
 const VersionHelper = require("../index.js")
 const packageName = require("../package.json").name
 const packageVersion = require("../package.json").version
@@ -10,13 +9,13 @@ const DriveJson = require("../index.js")
 main(process.argv.slice(2));
 
 function main(in_argv) {
-	if (0 == in_argv.length) {
+	if (0 == inArgv.length) {
 		return help();
 	}
 
 	//collect state into an object to make it expicit that state is shared between the promice closures
 	const state = {
-		"credentialsPath" : undefined,
+		"email" : undefined,
 		"keyFile" : undefined,
 		"dataServer" : undefined,
 		"dataSet" : {},
@@ -24,55 +23,43 @@ function main(in_argv) {
 	};
 	const promiceArray = [];
 
-	while (0 != in_argv.length) {
-		const token = in_argv.shift();
+	while (0 != inArgv.length) {
+		const token = inArgv.shift();
 		switch (token) {
 			default:
 			case "-h": case "--help": case "-?":
 				help();
 				return;
-			case "-c": case "--credentialsPath":
-				state.credentialsPath = in_argv.shift();
-				break;
-			case "-s": case "--clientSecretPath": {
-					const clientSecretPath = in_argv.shift();
-					promiceArray.push(DriveJson.DevGoogleHelper.createOAutho2ClientPromise(clientSecretPath, state.credentialsPath));
-				}
-				break;
 			case "-e": case "--email":
-				state.email = in_argv.shift();
+				state.email = in_args.shift();
 				break;
 			case "-k": case "--keyfile":
-				state.keyFile = in_argv.shift();
+				state.keyFile = in_args.shift();
 				break;
-			case "-d": case "--dataSet":
-				const data = in_argv.shift();
+			case "-s": case "--dataSet":
+				const data = in_args.shift();
 				state.dataSet[data] = undefined;
 				break;
-			case "-3": case "--sheet3rd": {
-					const drivepath = in_argv.shift();
-					promiceArray.push(makeSheetToObjectPromice(state, drivepath, DriveJson.SheetToObject.sheet3rdToObject)); 
-				}
+			case "-3": case "--sheet3rd":
+				const drivepath = in_args.shift();
+				promiceArray.push(makeSheetToObjectPromice(state, drivepath, DriveJson.SheetToObject.sheet3rdToObject)); 
 				break;
-			case "-5": case "--sheet5th": {
-					const drivepath = in_argv.shift();
-					promiceArray.push(makeSheetToObjectPromice(state, drivepath, DriveJson.SheetToObject.sheet5thToObject)); 
-				}
+			case "-5": case "--sheet5th":
+				const drivepath = in_args.shift();
+				promiceArray.push(makeSheetToObjectPromice(state, drivepath, DriveJson.SheetToObject.sheet5thToObject)); 
 				break;
-			case "-v": case "--sheet3rdKeyValue": {
-					const drivepath = in_argv.shift();
-					promiceArray.push(makeSheetToObjectPromice(state, drivepath, DriveJson.SheetToObject.sheet3rdKeyValueToObject)); 
-				}
+			case "-v": case "--sheet3rdKeyValue":
+				const drivepath = in_args.shift();
+				promiceArray.push(makeSheetToObjectPromice(state, drivepath, DriveJson.SheetToObject.sheet3rdKeyValueToObject)); 
 				break;
-			case "-o": case "--outjson": {
-					const outPath = in_argv.shift();
-					promiceArray.push(makeOutJsonPromice(state, outPath)); 
-				}
+			case "-o": case "--outjson":
+				const outPath = in_args.shift();
+				promiceArray.push(makeOutJsonPromice(state, outPath)); 
 				break;
 		}
 	}
 
-	Q.allSettled(promiceArray).then(function(input){
+	Q.allSettled(promiseArray).then(function(input){
 		var exitCode = 0;
 		for(var index = 0; index < input.length; ++index){
 			var item = input[index];
@@ -109,11 +96,11 @@ function help () {
 		"options:",
 		"-h --help -?",
 		"    generate this text",
-		"-c --credentialsPath <file path>",
-		"    a text file containing the credential string access by following the url generated when this param is missing",
-		"-s --clientSecretPath <file path>",
-		"    a json file containing the client secret json data for the OAuth client ID https://developers.google.com/drive/api/v3/quickstart/nodejs",
-		"-d --dataSet <lable>",
+		"-e --email <email>",
+		"    set the email for connection authority",
+		"-k --keyfile <filepath of key.pem>",
+		"    set the file path to the key permission file",
+		"-s --dataSet <lable>",
 		"    add lable to the allowed dataSet for filtering sheet3rdKeyValue sheets",
 		"-3 --sheet3rd <drive relative path to sheet : worksheet>",
 		"    append the result data with data sourced from google spread sheet worksheet in 3rd normalised form and trated as id : object",
