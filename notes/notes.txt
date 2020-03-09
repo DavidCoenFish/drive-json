@@ -20,3 +20,13 @@ WARNING: named ranges' names are conflicting with worksheet names (request works
 
 
 https://www.npmjs.com/package/webpack-auto-inject-version
+
+
+https://developers.google.com/sheets/api/quickstart/nodejs
+198351500527-359797phqg4kqmeps81e3bvj0klrqvqc.apps.googleusercontent.com
+r1zBUchb9uQqE7jVQRGZ5TdJ
+
+{"installed":{"client_id":"198351500527-359797phqg4kqmeps81e3bvj0klrqvqc.apps.googleusercontent.com","project_id":"quickstart-1583745279362","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"r1zBUchb9uQqE7jVQRGZ5TdJ","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+
+		"googleapis": "", //@39
+		"google-oauth-jwt": "^0.2.0",

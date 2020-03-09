@@ -13,7 +13,8 @@ module.exports.factory = function(in_dataServer){
 
 //if you start with an empty folder, consider path as absolute
 module.exports.factoryResolvePromice = function(in_baseCursor, in_path){
-	const newCursor = in_baseCursor.clone();
+	const deferred = Q.defer();
+	var newCursor = in_baseCursor.clone();
 	newCursor.pop(); // file leaf not part of path
 	const pathTokens = in_path.split("/");
 	if ("" === pathTokens[0]){
@@ -21,24 +22,24 @@ module.exports.factoryResolvePromice = function(in_baseCursor, in_path){
 		newCursor.setToRoot();
 		var rootName = pathTokens.shift();
 		if (rootName !== newCursor.m_nameStack[0]){
-			return Q.reject("expected root at start of absolute path:" + in_path);
+			console.warn("DriveCursor.resolve root folder name mismatch:" + rootName + " rootName:" + this.m_nameStack[0]);
+			return Q(newCursor);
 		}
 	}
 
-	var promice = Q(true);
+	var promice = Q(newCursor);
 	for (var index = 0, total = pathTokens.length; index < total; index++) {
+		//var token = pathTokens[pathTokens.length - 1 - index];
 		var token = pathTokens[index];
-		promice = pushPromiceClosure(token, newCursor, promice);
-	}
-	return promice.then(function(){
-		return newCursor;
-	});
-}
 
-function pushPromiceClosure(in_token, in_driveCursor, in_prevPromice){
-	return in_prevPromice.then(function(){
-		return in_driveCursor.pushPromise(in_token);
-	});
+		promice = function(in_token){
+			return promice.then(function(in_newCursor){
+				return in_newCursor.pushPromise(in_token);
+			});
+		}(token);
+	}
+
+	return promice;
 }
 
 const DriveCursor = function(in_dataServer){
@@ -101,7 +102,6 @@ DriveCursor.prototype.pushPromise = function(in_name){
 		this.m_worksheet = splitName[1];
 	}
 
-	this.m_nameStack.push(name);
 	var parentId = (0 < this.m_idStack.length) ? this.m_idStack[this.m_idStack.length - 1] : this.m_dataServer.getRootId();
 
 	const that = this;
@@ -116,7 +116,10 @@ DriveCursor.prototype.pushPromise = function(in_name){
 			break;
 		}
 
+		that.m_nameStack.push(name);
 		that.m_idStack.push(id);
+
+		return that;
 	});
 }
 

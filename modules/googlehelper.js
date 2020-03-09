@@ -5,7 +5,11 @@ const Util = require("./util.js");
 function generateAuthUrlConsole(in_oAuth2Client){
 	const authUrl = in_oAuth2Client.generateAuthUrl({
 		access_type: "offline",
-		scope: ["https://www.googleapis.com/auth/drive.metadata.readonly"]
+		scope: [
+			'https://www.googleapis.com/auth/spreadsheets.readonly',
+			'https://www.googleapis.com/auth/drive.readonly',
+			'https://www.googleapis.com/auth/drive.metadata.readonly'
+			]
 		});
 	console.log('Get credentials string by visiting this url:', authUrl);
 }
@@ -264,35 +268,19 @@ module.exports.getSpreadsheetWorksheet = function(in_spreadsheetID, in_worksheet
 		//console.log("gSpreadsheetWorksheetDataMap found key:" + key);
 		deferred.resolve(in_spreadsheetWorksheetDataMap[key]);
 	} else {
-		var name = encodeURI(in_worksheetName, "UTF-8");
-		RequestWithJWT({
-			//url: "https://sheets.googleapis.com/v4/spreadsheets/" + in_spreadsheetID + "?includeGridData=true&ranges=" + name + "&fields=sheets(data%2FrowData%2Fvalues%2FeffectiveValue)",
-			url: "https://sheets.googleapis.com/v4/spreadsheets/" + in_spreadsheetID + "/values/" + name + "?fields=values",
-			jwt: {
-				email: in_email,
-				keyFile: in_keyFile,
-				scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
-			}
-		}, function (error, response, body) {
+		const sheets = google.sheets({version: 'v4', auth});
+		sheets.spreadsheets.values.get({
+			spreadsheetId: in_spreadsheetID,
+			range: in_worksheetName
+		}, (error, res) => {
 			if (error != null){
 				deferred.reject("problem finding SpreadsheetWorksheet:" + in_spreadsheetID + " worksheetName:" + in_worksheetName + " error:" +  error);
 				return;
 			}
-			if (200 != response.statusCode){
-				deferred.reject("problem finding SpreadsheetWorksheet:" + in_spreadsheetID + " worksheetName:" + in_worksheetName + " statusCode:" +  response.statusCode);
-				return;
-			}
-			//console.log(body);
-			var data = JSON.parse(body);
-			try {
-				in_spreadsheetWorksheetDataMap[key] = data.values;
-				deferred.resolve(data.values);
-			} catch(err) {
-				deferred.reject("problem getting spreadsheet:" + in_spreadsheetID + " worksheet:" + in_worksheetName + " error:" +  err.message);
-			}
-
+			var value = res.data.values;
+			in_spreadsheetWorksheetDataMap[key] = value;
+			deferred.resolve(value);
+			return;
 		});
-	}
-
 	return deferred.promise;
 }

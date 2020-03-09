@@ -1,12 +1,17 @@
 const Q = require('q');
 const GoogleHelper = require("./googlehelper.js");
 
-module.exports.authorizationFactoryPromise = function(in_pathClientSecretJson, in_pathCredentialsText){
-	return GoogleHelper.createOAutho2ClientPromise(in_pathClientSecretJson, in_pathCredentialsText);
-}
+const TOKEN_PATH = 'token.json';
+const CREDENTIALS_PATH = 'credentials.json';
 
-module.exports.factory = function(in_authorization) {
-	return new DataServer(in_authorization);
+
+module.exports.factoryPromise = function(){
+	return GoogleHelper.createOAutho2ClientPromise(
+		TOKEN_PATH, 
+		CREDENTIALS_PATH
+		).then(function(in_autho){
+			return new DataServer(in_autho);
+	});
 }
 
 const TypeEnum = Object.freeze({
@@ -136,5 +141,3 @@ DataServer.prototype.getSpreadsheetWorksheetData = function(in_id, in_worksheetN
 		return GoogleHelper.getSpreadsheetWorksheet(in_id, in_worksheetName, that, that.m_authorization);
 	});
 };
-
-//DataServer.prototype.TypeEnum = TypeEnum;

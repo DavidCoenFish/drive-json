@@ -18,33 +18,22 @@
 			],
 			"port": 5858
 		},
+
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "cmd line dev",
+			"name": "networktest",
 			"runtimeExecutable": "npm",
 			"windows": {
 				"runtimeExecutable": "npm.cmd"
 			},
 			"runtimeArgs": [
 				"run-script",
-				"cmd_dev"
+				"networktest_vsc"
 			],
 			"port": 5858
 		},
-		{
-			"type": "node",
-			"request": "launch",
-			"name": "cmd line test",
-			"runtimeExecutable": "npm",
-			"windows": {
-				"runtimeExecutable": "npm.cmd"
-			},
-			"runtimeArgs": [
-				"run-script",
-				"cmd_test"
-			],
-			"port": 5858
-		},
+
+		
 	]
 }

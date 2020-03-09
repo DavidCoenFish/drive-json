@@ -40,7 +40,7 @@ const RunSimple = function(promiseArray) {
 					"root" : true,
 					"type" : TypeEnum.folder,
 					},
-				childrenArray : ["foldera"]
+				childrenArray : ["foldera", "test2"]
 				},
 			"foldera" : {
 				"metaData" : {
@@ -65,6 +65,14 @@ const RunSimple = function(promiseArray) {
 					"type" : TypeEnum.folder,
 					},
 				childrenArray : []
+				},
+			"test2":{
+				"metaData" : {
+					"name" : "test2",
+					"id" : "test2",
+					"type" : TypeEnum.file,
+					},
+				childrenArray : []
 				}
 		});
 
@@ -77,7 +85,7 @@ const RunSimple = function(promiseArray) {
 			return DriveCursor.factoryResolvePromice(driveCursorBase, "/root/foldera/folderb");
 		}).then(function(in_input){
 			driveCursorA = in_input;
-			return DriveCursor.factoryResolvePromice(driveCursorA, "../folderc/test:sheet");
+			return DriveCursor.factoryResolvePromice(driveCursorA, "./folderc/test:sheet");
 		}).then(function(in_input){
 			driveCursorB = in_input;
 			return DriveCursor.factoryResolvePromice(driveCursorB, "/root/test2");
@@ -86,7 +94,7 @@ const RunSimple = function(promiseArray) {
 
 			Test.DealTest("RunSimple0", driveCursorBase.getFullPath(), "");
 			Test.DealTest("RunSimple1", driveCursorA.getFullPath(), "/root/foldera/folderb");
-			Test.DealTest("RunSimple2", driveCursorB.getFullPath(), "/root/folderc/test:sheet");
+			Test.DealTest("RunSimple2", driveCursorB.getFullPath(), "/root/foldera/folderc/test:sheet");
 			Test.DealTest("RunSimple3", driveCursorC.getFullPath(), "/root/test2");
 		});
 	}));

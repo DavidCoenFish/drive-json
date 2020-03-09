@@ -25,7 +25,20 @@ module.exports = function(promiseArray) {
 const RunSimpleInt = function(promiseArray) {
 	promiseArray.push(Q(true).then(function(input){
 		var dataServer = MockDataServer({
+			"root" : {
+				"metaData" : {
+					"name" : "root",
+					"id" : "root",
+					"root" : true,
+					"type" : TypeEnum.folder,
+					},
+				childrenArray : [ "fileId0" ], //folder children data
+				},
 			"fileId0" : {
+				"metaData" : {
+					"name" : "fileId0",
+					"id" : "fileId0"
+					},
 				"data" : {
 					"toc" : [
 							[ "int:version", 42 ]
@@ -36,7 +49,7 @@ const RunSimpleInt = function(promiseArray) {
 
 		var baseObject = {};
 		return Q(true).then(function(){
-			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId0:toc");
+			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "fileId0:toc");
 		}).then(function(driveCursor){
 			var cursor = Cursor();
 			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
@@ -51,7 +64,21 @@ const RunSimpleInt = function(promiseArray) {
 const RunSimpleFloat = function(promiseArray) {
 	promiseArray.push(Q(true).then(function(input){
 		var dataServer = MockDataServer({
+			"root" : {
+				"metaData" : {
+					"name" : "root",
+					"id" : "root",
+					"root" : true,
+					"type" : TypeEnum.folder,
+					},
+				childrenArray : [ "fileId0" ], //folder children data
+				},
 			"fileId0" : {
+				"metaData" : {
+					"name" : "fileId0",
+					"id" : "fileId0",
+					"root" : true
+					},
 				"data" : {
 					"toc" : [
 							[ "float:value", 2.5 ]
@@ -62,7 +89,7 @@ const RunSimpleFloat = function(promiseArray) {
 
 		var baseObject = {};
 		return Q(true).then(function(){
-			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId0:toc");
+			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "fileId0:toc");
 		}).then(function(driveCursor){
 			var cursor = Cursor();
 			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
@@ -77,7 +104,21 @@ const RunSimpleFloat = function(promiseArray) {
 const RunSimpleBool = function(promiseArray) {
 	promiseArray.push(Q(true).then(function(input){
 		var dataServer = MockDataServer({
+			"root" : {
+				"metaData" : {
+					"name" : "root",
+					"id" : "root",
+					"root" : true,
+					"type" : TypeEnum.folder,
+					},
+				childrenArray : [ "fileId0" ], //folder children data
+				},
 			"fileId0" : {
+				"metaData" : {
+					"name" : "fileId0",
+					"id" : "fileId0",
+					"root" : true
+					},
 				"data" : {
 					"toc" : [
 							[ "bool:value", null ]
@@ -88,7 +129,7 @@ const RunSimpleBool = function(promiseArray) {
 
 		var baseObject = {};
 		return Q(true).then(function(){
-			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId0:toc");
+			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "fileId0:toc");
 		}).then(function(driveCursor){
 			var cursor = Cursor();
 			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
@@ -103,7 +144,21 @@ const RunSimpleBool = function(promiseArray) {
 const RunSimpleString = function(promiseArray) {
 	promiseArray.push(Q(true).then(function(input){
 		var dataServer = MockDataServer({
+			"root" : {
+				"metaData" : {
+					"name" : "root",
+					"id" : "root",
+					"root" : true,
+					"type" : TypeEnum.folder,
+					},
+				childrenArray : [ "fileId0" ], //folder children data
+				},
 			"fileId0" : {
+				"metaData" : {
+					"name" : "fileId0",
+					"id" : "fileId0",
+					"root" : true
+					},
 				"data" : {
 					"toc" : [
 							[ "string:value", "hello" ]
@@ -114,7 +169,7 @@ const RunSimpleString = function(promiseArray) {
 
 		var baseObject = {};
 		return Q(true).then(function(){
-			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId0:toc");
+			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "fileId0:toc");
 		}).then(function(driveCursor){
 			var cursor = Cursor();
 			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
@@ -129,7 +184,21 @@ const RunSimpleString = function(promiseArray) {
 const RunSimpleArray = function(promiseArray) {
 	promiseArray.push(Q(true).then(function(input){
 		var dataServer = MockDataServer({
-			"fileId0" : {
+				"root" : {
+				"metaData" : {
+					"name" : "root",
+					"id" : "root",
+					"root" : true,
+					"type" : TypeEnum.folder,
+					},
+				childrenArray : [ "fileId0" ], //folder children data
+				},
+		"fileId0" : {
+				"metaData" : {
+					"name" : "fileId0",
+					"id" : "fileId0",
+					"root" : true
+					},
 				"data" : {
 					"toc" : [
 							[ "value:array:int", "1" ],
@@ -142,7 +211,7 @@ const RunSimpleArray = function(promiseArray) {
 
 		var baseObject = {};
 		return Q(true).then(function(){
-			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId0:toc");
+			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "fileId0:toc");
 		}).then(function(driveCursor){
 			var cursor = Cursor();
 			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
@@ -157,7 +226,20 @@ const RunSimpleArray = function(promiseArray) {
 const RunSimpleSheet3rd = function(promiseArray) {
 	promiseArray.push(Q(true).then(function(input){
 		var dataServer = MockDataServer({
+			"root" : {
+				"metaData" : {
+					"name" : "root",
+					"id" : "root",
+					"root" : true,
+					"type" : TypeEnum.folder,
+					},
+				childrenArray : [ "fileId0", "fileId1" ], //folder children data
+				},
 			"fileId0" : {
+				"metaData" : {
+					"name" : "fileId0",
+					"id" : "fileId0"
+					},
 				"data" : {
 					"sheeta" : [
 							[ "sheet3rd:a", "fileId0:sheetb" ],
@@ -171,6 +253,10 @@ const RunSimpleSheet3rd = function(promiseArray) {
 					}
 				},
 			"fileId1" : {
+				"metaData" : {
+					"name" : "fileId1",
+					"id" : "fileId1"
+					},
 				"data" : {
 					"sheeta" : [
 							[ "_id", "bool:d"],
@@ -183,7 +269,7 @@ const RunSimpleSheet3rd = function(promiseArray) {
 
 		var baseObject = {};
 		return Q(true).then(function(){
-			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId0:sheeta");
+			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "fileId0:sheeta");
 		}).then(function(driveCursor){
 			var cursor = Cursor();
 			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
@@ -198,7 +284,20 @@ const RunSimpleSheet3rd = function(promiseArray) {
 const RunSimpleSheet5th = function(promiseArray) {
 	promiseArray.push(Q(true).then(function(input){
 		var dataServer = MockDataServer({
+			"root" : {
+				"metaData" : {
+					"name" : "root",
+					"id" : "root",
+					"root" : true,
+					"type" : TypeEnum.folder,
+					},
+				childrenArray : [ "fileId0", "fileId1" ], //folder children data
+				},
 			"fileId0" : {
+				"metaData" : {
+					"name" : "fileId0",
+					"id" : "fileId0"
+					},
 				"data" : {
 					"sheeta" : [
 							[ "sheet5th:a", "fileId0:sheetb" ],
@@ -210,6 +309,10 @@ const RunSimpleSheet5th = function(promiseArray) {
 					}
 				},
 			"fileId1" : {
+				"metaData" : {
+					"name" : "fileId1",
+					"id" : "fileId1"
+					},
 				"data" : {
 					"sheeta" : [
 							[ "string:value", "world" ]
@@ -220,7 +323,7 @@ const RunSimpleSheet5th = function(promiseArray) {
 
 		var baseObject = {};
 		return Q(true).then(function(){
-			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId0:sheeta");
+			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "fileId0:sheeta");
 		}).then(function(driveCursor){
 			var cursor = Cursor();
 			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
@@ -235,7 +338,20 @@ const RunSimpleSheet5th = function(promiseArray) {
 const RunSimpleSheet3rdKeyValue = function(promiseArray) {
 	promiseArray.push(Q(true).then(function(input){
 		var dataServer = MockDataServer({
+			"root" : {
+				"metaData" : {
+					"name" : "root",
+					"id" : "root",
+					"root" : true,
+					"type" : TypeEnum.folder,
+					},
+				childrenArray : [ "fileId0", "fileId1" ], //folder children data
+				},
 			"fileId0" : {
+				"metaData" : {
+					"name" : "fileId0",
+					"id" : "fileId0"
+					},
 				"data" : {
 					"toc" : [
 							[ "a:b:sheet3rdKeyValue", "fileId1:sheet1" ]
@@ -243,6 +359,10 @@ const RunSimpleSheet3rdKeyValue = function(promiseArray) {
 					}
 				},
 			"fileId1" : {
+				"metaData" : {
+					"name" : "fileId1",
+					"id" : "fileId1"
+					},
 				"data" : {
 					"sheet1" : [
 						[ "_id", "dataset:a:string", "dataset:b:string"],
@@ -256,9 +376,9 @@ const RunSimpleSheet3rdKeyValue = function(promiseArray) {
 
 		var baseObject = {};
 		return Q(true).then(function(){
-			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId0:toc");
+			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "fileId0:toc");
 		}).then(function(driveCursor){
-			var cursor = Cursor({"b":undefined});
+			var cursor = Cursor({"b" : 0});
 			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
 		}).then(function(input){
 			var expected = {"a" : { "b" : { "a" : "ab", "b" : "bb", "c" : "cb" } } };
@@ -271,7 +391,20 @@ const RunSimpleSheet3rdKeyValue = function(promiseArray) {
 const RunData = function(promiseArray) {
 	promiseArray.push(Q(true).then(function(input){
 		var dataServer = MockDataServer({
+			"root" : {
+				"metaData" : {
+					"name" : "root",
+					"id" : "root",
+					"root" : true,
+					"type" : TypeEnum.folder,
+					},
+				childrenArray : [ "fileId0" ], //folder children data
+				},
 			"fileId0" : {
+				"metaData" : {
+					"name" : "fileId0",
+					"id" : "fileId0"
+					},
 				"data" : {
 					"toc" : [
 							[ "root:array:1:array:outer:inner:int", "1" ],
@@ -285,7 +418,7 @@ const RunData = function(promiseArray) {
 
 		var baseObject = {};
 		return Q(true).then(function(){
-			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId0:toc");
+			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "fileId0:toc");
 		}).then(function(driveCursor){
 			var cursor = Cursor();
 			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
@@ -300,7 +433,20 @@ const RunData = function(promiseArray) {
 const RunSheet3rdToObject = function(promiseArray) {
 	promiseArray.push(Q(true).then(function(input){
 		var dataServer = MockDataServer({
+			"root" : {
+				"metaData" : {
+					"name" : "root",
+					"id" : "root",
+					"root" : true,
+					"type" : TypeEnum.folder,
+					},
+				childrenArray : [ "fileId0" ], //folder children data
+				},
 			"fileId0" : {
+				"metaData" : {
+					"name" : "fileId0",
+					"id" : "fileId0"
+					},
 				"data" : {
 					"toc" : [
 							[ "_id", "a:int", "b:bool"],
@@ -316,7 +462,7 @@ const RunSheet3rdToObject = function(promiseArray) {
 
 		var baseObject = {};
 		return Q(true).then(function(){
-			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "/root/fileId0:toc");
+			return DriveCursor.factoryResolvePromice(DriveCursor.factory(dataServer), "fileId0:toc");
 		}).then(function(driveCursor){
 			var cursor = Cursor();
 			return SheetToObject.sheet3rdToObject(dataServer, driveCursor, cursor, baseObject);
@@ -331,6 +477,15 @@ const RunSheet3rdToObject = function(promiseArray) {
 const RunChildren = function(promiseArray) {
 	promiseArray.push(Q(true).then(function(input){
 		var dataServer = MockDataServer({
+			"root" : {
+				"metaData" : {
+					"name" : "root",
+					"id" : "root",
+					"root" : true,
+					"type" : TypeEnum.folder,
+					},
+				childrenArray : [ "fileId00", "fileId01", "folderId0" ], //folder children data
+				},
 			"fileId00" : {
 				"metaData" : {
 					"name" : "fileId00",
@@ -338,7 +493,7 @@ const RunChildren = function(promiseArray) {
 					},
 				"data" : {
 					"toc" : [
-							[ "sheet5th:foo", "folderId0/fileId1:sheet0" ],
+							[ "sheet5th:foo", "./folderId0/fileId1:sheet0" ],
 						]
 					}
 				},
@@ -353,8 +508,7 @@ const RunChildren = function(promiseArray) {
 			"fileId1" : {
 				"metaData" : {
 					"name" : "fileId1",
-					"id" : "fileId1",
-					"rootChild" : false
+					"id" : "fileId1"
 					},
 				"data" : {
 					"sheet0" : [
@@ -382,7 +536,7 @@ const RunChildren = function(promiseArray) {
 			var cursor = Cursor();
 			return SheetToObject.sheet5thToObject(dataServer, driveCursor, cursor, baseObject);
 		}).then(function(input){
-			var expected = {"foo" : { "a":5, "bar":{ "b":7 } } };
+			var expected =  {"foo":{"a":5,"bar":{"b":7}}}
 			Test.DealTest("RunChildren", JSON.stringify(baseObject), JSON.stringify(expected));
 			return true;
 		});
