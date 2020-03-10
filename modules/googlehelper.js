@@ -64,117 +64,145 @@ module.exports.createOAutho2ClientPromise = function(in_pathToken, in_pathCreden
 	});
 }
 
+const isMimeTypeFolder = function(in_mimeType){
+	//var mimeType = in_metaData.mimeType;
+	if (in_mimeType === "application/vnd.google-apps.folder"){
+		return true;
+	}
+	return false;
+}
+
+/*
+[
+	{"mimeType": "application/vnd.google-apps.folder","id":"1vyDCCFHque977LWJ07WuhZFdjDAGF7lGNZ5JDUd5D54","name":"data","parents":["1jKX8iT3CAxf8l2kn75Uh9VV8BUoQm6wS"]},
+	...
+]
+	in_dataCache.m_folderMetaDataMap = {}; //name to metadata (folders only)
+	in_dataCache.m_metaDataDataMap = {}; //id to metadata (files and folders)
+	in_dataCache.m_rootId = undefined;
+	in_dataCache.m_rootName = undefined
+*/
+const DealFiles = function(in_fileArray, in_dataCache){
+	for (var index = 0, length = in_fileArray.length; index < length; index++) {
+		var item = in_fileArray[index];
+		in_dataCache.m_metaDataDataMap[item.id] = item;
+		if (true === isMimeTypeFolder(item.mimeType)){
+			in_dataCache.m_folderMetaDataMap[item.id] = item;
+			item.children = [];
+		}
+	}
+
+	//guess root
+	for (var index = 0, length = in_fileArray.length; index < length; index++) {
+		var parentArray = in_fileArray[index].parents;
+		if (undefined === parentArray){
+			continue;
+		}
+		for (var subindex = 0, sublength = parentArray.length; subindex < sublength; subindex++) {
+			var parent = parentArray[subindex];
+			if (false === (parent in in_dataCache.m_metaDataDataMap)){
+				in_dataCache.m_rootId = parent;
+			}
+		}
+	}
+
+	var rootMetadata = {
+		"id":in_dataCache.m_rootId,
+		"name":undefined,
+		"children":[]
+	};
+
+	if (undefined != in_dataCache.m_rootId){
+		in_dataCache.m_metaDataDataMap[in_dataCache.m_rootId] = rootMetadata;
+		in_dataCache.m_folderMetaDataMap[in_dataCache.m_rootId] = rootMetadata;
+	} else {
+		console.log("could not determin root folder");
+	}
+
+	// populate child array
+	for (var index = 0, length = in_fileArray.length; index < length; index++) {
+		var item = in_fileArray[index];
+		var parentArray = item.parents;
+		if (undefined === parentArray){
+			rootMetadata.children.push(item.id);
+			continue;
+		}
+		for (var subindex = 0, sublength = parentArray.length; subindex < sublength; subindex++) {
+			var parentID = parentArray[subindex];
+			if (parentID in in_dataCache.m_folderMetaDataMap){
+				var parent = in_dataCache.m_folderMetaDataMap[parentID];
+				parent.children.push(item.id);
+			}
+		}
+	}
+
+	return;
+}
+
+/*
+const drive = GoogleApis.google.drive({version: 'v3', auth});
+  drive.files.list({
+    pageSize: 10,
+    fields: 'nextPageToken, files(id,name,parents,mimeType)
+  }
+ */
+module.exports.getFileList = function(in_dataCache, in_authorization){
+	const drive = GoogleApis.google.drive({
+		version: "v3",
+		auth: in_authorization
+		});
+	return drive.files.list({
+		corpora: "user",
+		fields: "files(id,name,parents,mimeType)"
+	}).then(function(in_res){
+		DealFiles(in_res.data.files, in_dataCache);
+	}).then(function(){
+		return getNameByID(in_dataCache.m_rootId);
+	}).then(function(in_name){
+		if (undefined !== in_name){
+			in_dataCache.m_folderMetaDataMap[in_dataCache.m_rootId].name = in_name;
+			in_dataCache.m_rootName = in_name;
+		}
+		return;
+	});
+}
+
 /*
 const drive = GoogleApis.google.drive({version: 'v3', auth});
   drive.files.list({
     pageSize: 10,
     fields: 'nextPageToken, files(id, name)',
   }
-
  */
-module.exports.getFolderMetaDataByName = function(in_folderName, in_dataCache, in_authorization){
-	const in_folderMetaDataMap = in_dataCache.m_folderMetaDataMap;
-	console.log("getFolderMetaDataByName:" + in_folderName);
-	var deferred = Q.defer();
-	if (in_folderName in in_folderMetaDataMap){
-		//console.log("gFolderMetaDataMap found in_folderName:" + in_folderName);
-		deferred.resolve(in_folderMetaDataMap[in_folderName]);
-	} else {
-		const drive = GoogleApis.google.drive({
-			version: "v3",
-			auth: in_authorization
-			});
-		var name = encodeURI(in_folderName, "UTF-8");
-		drive.files.list({
-			fields: "files(id, name, mimeType)",
-			q: "mimeType 'applicatio/vnd.google-apps.folder' and name '" + name + "'"
-		}).then(function(in_res){
-			console.log("getFolderMetaDataByName:" + JSON.parse(in_res));
+const getNameByID = function(in_id, in_authorization){
+	const drive = GoogleApis.google.drive({
+		version: "v3",
+		auth: in_authorization
 		});
-	}
-
-	return deferred.promise;
-}
-
-const getMetaData = function(in_id, in_dataCache, in_authorization){
-	const in_metaDataDataMap = in_dataCache.m_metaDataDataMap;
-	//console.log("getMetaData:" + in_id);
-	var deferred = Q.defer();
-	if (in_id in in_metaDataDataMap){
-		//console.log("gMetaDataDataMap found in_id:" + in_id);
-		deferred.resolve(in_metaDataDataMap[in_id]);
-	} else {
-		const drive = GoogleApis.google.drive({
-			version: "v3",
-			auth: in_authorization
-			});
-		var name = encodeURI(in_folderName, "UTF-8");
-		//"https://www.googleapis.com/drive/v3/files/" + in_id + "?fields=id%2CmimeType%2Cname%2Cparents",
-		//in_metaDataDataMap[in_id] = data;
-		//deferred.resolve(data);
-		deferred.reject("problem finding metadata for file:" + in_id + " error:" +  err.message);
-	}
-
-	return deferred.promise;
-}
-module.exports.getMetaData = getMetaData;
-
-module.exports.getChildMetaDataByName = function(in_folderID, in_childName, in_dataCache){
-	return getChildrenOfFolder(in_folderID, in_dataCache).then(function(input){
-		for (var index = 0, length = input.length; index < length; index++) {
-			var metadata = input[index];
-			if (in_childName == metadata.name){
-				return metadata;
-			}
-		}
-		return undefined;
+	return drive.files.list({
+		id:in_id,
+		fields: "name"
+	}).then(function(in_res){
+		return in_res.name;
 	});
 }
 
-const getChildrenOfFolder = function(in_folderID, in_dataCache, in_authorization){
-	const in_childrenOfFolderDataMap = in_dataCache.m_childrenOfFolderDataMap;
-	//console.log("getChildrenOfFolder:" + in_folderID);
-	var deferred = Q.defer();
-	if (in_folderID in in_childrenOfFolderDataMap){
-		deferred.resolve(in_childrenOfFolderDataMap[in_folderID]);
-	} else {
-		//url: "https://www.googleapis.com/drive/v3/files?q='" + in_folderID + "'+in+parents&fields=files%2Fid",
-		deferred.reject("problem finding children of folder:" + in_folderID + " error:" +  error);
-		//in_childrenOfFolderDataMap[in_folderID] = input;
-		//deferred.resolve(input);
-	}
-
-	return deferred.promise;
-}
-module.exports.getChildrenOfFolder = getChildrenOfFolder;
-
-/*
-https://developers.google.com/apis-explorer/#p/sheets/v4/sheets.spreadsheets.values.get?spreadsheetId=1WX1-l_9jh3JddGzRuxUSC_zU0NirbyJk-tJyugbJagI&range=character_rules&fields=values&_h=2&
-*/
 module.exports.getSpreadsheetWorksheet = function(in_spreadsheetID, in_worksheetName, in_dataCache, in_authorization){
 	const in_spreadsheetWorksheetDataMap = in_dataCache.m_spreadsheetWorksheetDataMap;
 	//console.log("getSpreadsheetWorksheet spreadsheet:" + in_spreadsheetID + " worksheet:" + in_worksheetName);
 	const key = in_spreadsheetID + "_" + in_worksheetName;
-	var deferred = Q.defer();
 
 	if (key in in_spreadsheetWorksheetDataMap){
 		//console.log("gSpreadsheetWorksheetDataMap found key:" + key);
-		deferred.resolve(in_spreadsheetWorksheetDataMap[key]);
-	} else {
-		const sheets = google.sheets({version: 'v4', auth});
-		sheets.spreadsheets.values.get({
-			spreadsheetId: in_spreadsheetID,
-			range: in_worksheetName
-		}, (error, res) => {
-			if (error != null){
-				deferred.reject("problem finding SpreadsheetWorksheet:" + in_spreadsheetID + " worksheetName:" + in_worksheetName + " error:" +  error);
-				return;
-			}
-			var value = res.data.values;
-			in_spreadsheetWorksheetDataMap[key] = value;
-			deferred.resolve(value);
-			return;
-		});
+		return Q(in_spreadsheetWorksheetDataMap[key]);
 	}
-	return deferred.promise;
+	const sheets = google.sheets({version: 'v4', auth});
+	return sheets.spreadsheets.values.get({
+		spreadsheetId: in_spreadsheetID,
+		range: in_worksheetName
+	}).then(function(in_result){
+		var value = in_result.data.values;
+		in_spreadsheetWorksheetDataMap[key] = value;
+		return;
+	});
 }

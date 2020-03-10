@@ -5,7 +5,8 @@
 	"main": "index.js",
 	"scripts": {
 		"test_vsc": "node --nolazy --inspect-brk=5858 bin/unittest",
-		"networktest_vsc": "node --nolazy --inspect-brk=5858 bin/networktest"
+		"networktest_vsc": "node --nolazy --inspect-brk=5858 bin/networktest",
+		"callofteabagnight_vsc": "node --nolazy --inspect-brk=5858 bin/callofteabagnight"
 	},
 	"keywords": [],
 	"author": "David Coen",
@@ -13,8 +14,6 @@
 	"private": true,
 	"dependencies": {
 		"q": "^1.5.1",
-		"requestify": "^0.2.5",
-		"googleapis": "latest",
-		"version-helper": "file:../version-helper"
+		"googleapis": "latest"
 	}
 }

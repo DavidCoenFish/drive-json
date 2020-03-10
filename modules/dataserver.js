@@ -6,11 +6,15 @@ const CREDENTIALS_PATH = 'credentials.json';
 
 
 module.exports.factoryPromise = function(){
+	var dataServer = undefined;
 	return GoogleHelper.createOAutho2ClientPromise(
 		TOKEN_PATH, 
 		CREDENTIALS_PATH
-		).then(function(in_autho){
-			return new DataServer(in_autho);
+	).then(function(in_autho){
+		dataServer = new DataServer(in_autho);
+		return GoogleHelper.getFileList(dataServer, in_autho);
+	}).then(function(in_autho){
+		return dataServer;
 	});
 }
 
@@ -23,12 +27,13 @@ const TypeEnum = Object.freeze({
 module.exports.TypeEnum = TypeEnum;
 
 const DataServer = function(in_authorization) {
-	this.m_folderMetaDataMap = {};
-	this.m_metaDataDataMap = {};
-	this.m_childrenOfFolderDataMap = {};
-	this.m_spreadsheetWorksheetDataMap = {};
+	this.m_folderMetaDataMap = {}; //name to metadata (folders only)
+	this.m_metaDataDataMap = {}; //id to metadata (files and folders)
+	this.m_spreadsheetWorksheetDataMap = {}; //id to sheet data
 	this.m_test = 0;
 	this.m_authorization = in_authorization;
+	this.m_rootId = undefined;
+	this.m_rootName = undefined
 }
 
 const getType = function(in_mimeType){
@@ -43,13 +48,11 @@ const getType = function(in_mimeType){
 }
 
 DataServer.prototype.getRootName = function() {
-	//console.warn("DataServer.getRootName is unimplemented");
-	return "root";
+	return this.m_rootName;
 }
 
 DataServer.prototype.getRootId = function() {
-	//console.warn("DataServer.getRootId is unimplemented");
-	return "root";
+	return this.m_rootId;
 }
 
 DataServer.prototype.getMetaDataByNameArray = function(in_input, in_dirArray) {
@@ -78,24 +81,13 @@ resolve object {
 }
 */
 DataServer.prototype.getFolderMetaDataByName = function(in_name) {
-	//console.log("getFolderMetaDataByName in_name:" + in_name);
-	var dirArray = in_name.split("/");
-	//console.log(" dirArray:" + dirArray);
-	var rootDir = dirArray.shift();
-
-	var that = this;
-
-	return Q.delay(100).then(function(){
-		return GoogleHelper.getFolderMetaDataByName(rootDir, that, that.m_authorization);
-	}).then(function(input){
-		return that.getMetaDataByNameArray(input, dirArray);
-	}).then(function(input){
-		if (input != null){
-			input.type = getType(input.mimeType);
+	for (var key in this.m_folderMetaDataMap) {
+		var metaData = this.m_folderMetaDataMap[key];
+		if (in_name == metaData.name){
+			return metaData;
 		}
-		//console.log(" input:" + input);
-		return input;
-	});
+	}
+	return undefined;
 };
 
 /*
@@ -109,30 +101,26 @@ resolve object {
 }
 */
 DataServer.prototype.getMetaDataByID = function(in_id){
-	var that = this;
-	return Q.delay(100).then(function(){
-		return GoogleHelper.getMetaData(in_id, that, that.m_authorization);
-	}).then(function(input){
-		if (input != null){
-			input.type = getType(input.mimeType);
-		}
-		return input;
-	});
+	if (in_id in this.m_metaDataDataMap){
+		return this.m_metaDataDataMap[in_id];
+	}
+	return undefined;
 };
 
 DataServer.prototype.getFolderChildrenMetaDataArray = function(in_id){
-	var that = this;
-	return Q.delay(100).then(function(){
-		return GoogleHelper.getChildrenOfFolder(in_id, that, that.m_authorization);
-	}).then(function(input){
-		for (var index = 0, length = input.length; index < length; index++) {
-			var item = input[index];
-			if (item != null){
-				item.type = getType(item.mimeType);
+	var metaDataArray = [];
+	if (in_id in this.m_folderMetaDataMap){
+		var childrenArray = this.m_folderMetaDataMap[in_id].children;
+		if (null != childrenArray){ 
+			for (var index = 0, length = childrenArray.length; index < length; index++) {
+				var id = childrenArray[index];
+				if (id in this.m_metaDataDataMap){
+					metaDataArray.push(this.m_metaDataDataMap[id]);
+				}
 			}
 		}
-		return input;
-	});
+	}
+	return metaDataArray;
 };
 
 DataServer.prototype.getSpreadsheetWorksheetData = function(in_id, in_worksheetName){
