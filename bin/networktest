@@ -6,6 +6,9 @@ const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
 
+console.log("start");
+
+
 // If modifying these scopes, delete token.json.
 const SCOPES = [
 	'https://www.googleapis.com/auth/spreadsheets.readonly',
@@ -83,7 +86,6 @@ https://docs.google.com/spreadsheets/d/1vyDCCFHque977LWJ07WuhZFdjDAGF7lGNZ5JDUd5
 
  */
 function listMajors(auth) {
-	/*
   const sheets = google.sheets({version: 'v4', auth});
   sheets.spreadsheets.values.get({
     spreadsheetId: '1vyDCCFHque977LWJ07WuhZFdjDAGF7lGNZ5JDUd5D54',
@@ -92,7 +94,6 @@ function listMajors(auth) {
     if (err) return console.log('The API returned an error: ' + err);
     console.log(JSON.stringify(res.data.values));
   });
-*/
 
 /*
 	const drive = google.drive({
@@ -119,4 +120,5 @@ function listMajors(auth) {
 	});
 */
 
+	console.log("end");
 }

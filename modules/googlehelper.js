@@ -1,56 +1,65 @@
 const Q = require("q");
 const GoogleApis = require("googleapis");
 const Util = require("./util.js");
+const SCOPES = [
+			'https://www.googleapis.com/auth/spreadsheets.readonly',
+			'https://www.googleapis.com/auth/drive.readonly',
+			'https://www.googleapis.com/auth/drive.metadata.readonly'
+			];
 
 function generateAuthUrlConsole(in_oAuth2Client){
 	const authUrl = in_oAuth2Client.generateAuthUrl({
 		access_type: "offline",
-		scope: [
-			'https://www.googleapis.com/auth/spreadsheets.readonly',
-			'https://www.googleapis.com/auth/drive.readonly',
-			'https://www.googleapis.com/auth/drive.metadata.readonly'
-			]
+		scope: SCOPES
 		});
 	console.log('Get credentials string by visiting this url:', authUrl);
 }
 
-//Util.readFilePromise
-//https://developers.google.com/drive/api/v3/quickstart/nodejs
-module.exports.createOAutho2ClientPromise = function(in_pathClientSecretJson, in_pathCredentialsText){
-	var credentials = undefined;
-	var oAuth2Client = undefined;
-	return Q(true).then(function(){
-		return Util.readFilePromise(in_pathClientSecretJson);
-	}).then(function(in_content){
-		const clientSecret = JSON.parse(in_content);
-		oAuth2Client = new GoogleApis.google.auth.OAuth2(
-			clientSecret.installed.client_id,
-			clientSecret.installed.client_secret,
-			clientSecret.installed.redirect_uris[0]);
-		return;
-	}).then(function(){
-		if (undefined !== in_pathCredentialsText) {
-			return Util.readFilePromise(in_pathCredentialsText);
-		}
-		generateAuthUrlConsole(oAuth2Client);
-		return;
-	}, function(in_error){
-		console.log('error:', in_error);
-		generateAuthUrlConsole(oAuth2Client);
-		return;
-	}).then(function(in_credentialsString){
-		return dealAuth2ClientCredentials(in_credentialsString, oAuth2Client);
+const MakeToken = function(in_oAuth2Client, in_pathToken){
+	var deferred = Q.defer();
+	const authUrl = in_oAuth2Client.generateAuthUrl({
+		access_type: 'offline',
+		scope: SCOPES,
 	});
+	console.log('Authorize this app by visiting this url:', authUrl);
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+	});
+	rl.question('Enter the code from that page here: ', (code) => {
+		rl.close();
+		in_oAuth2Client.getToken(code, (error, token) => {
+			if (error){
+				deferred.reject("Error while trying to retrieve access token error:" +  error);
+				return;
+			}
+
+			deferred.resolve(Util.writeFilePromise(JSON.stringify(token)));
+		});
+	});
+	return deferred.promise;
 }
 
-function dealAuth2ClientCredentials(in_credentialsString, in_oAuth2Client){
-	if (undefined === in_credentialsString){
-		return undefined;
-	}
+//Util.readFilePromise
+//https://developers.google.com/drive/api/v3/quickstart/nodejs
+module.exports.createOAutho2ClientPromise = function(in_pathToken, in_pathCredentialsText){
+	var oAuth2Client = undefined;
 	return Q(true).then(function(){
-		return in_oAuth2Client.getToken(in_credentialsString)
-	}).then(function(in_credentials){
-		oAuth2Client.setCredentials(in_credentials);
+		return Util.readFilePromise(in_pathCredentialsText);
+	}).then(function(in_credentialsText){
+		const credentials = JSON.parse(in_credentialsText);
+		oAuth2Client = new GoogleApis.google.auth.OAuth2(
+			credentials.installed.client_id,
+			credentials.installed.client_secret,
+			credentials.installed.redirect_uris[0]);
+		return Util.readFilePromise(in_pathToken);
+	}).then(function(in_tokenFile){
+		oAuth2Client.setCredentials(JSON.parse(in_tokenFile));
+		return oAuth2Client;
+	}, function(in_error){
+		console.log('error:', in_error);
+		return MakeToken(oAuth2Client);
+	}).then(function(){
 		return oAuth2Client;
 	});
 }
@@ -71,7 +80,6 @@ module.exports.getFolderMetaDataByName = function(in_folderName, in_dataCache, i
 		//console.log("gFolderMetaDataMap found in_folderName:" + in_folderName);
 		deferred.resolve(in_folderMetaDataMap[in_folderName]);
 	} else {
-
 		const drive = GoogleApis.google.drive({
 			version: "v3",
 			auth: in_authorization
@@ -80,66 +88,8 @@ module.exports.getFolderMetaDataByName = function(in_folderName, in_dataCache, i
 		drive.files.list({
 			fields: "files(id, name, mimeType)",
 			q: "mimeType 'applicatio/vnd.google-apps.folder' and name '" + name + "'"
-		}).then(
-		//files?q=mimeType%3D'application%2Fvnd.google-apps.folder'+and+name%3D'" + name + "'&fields=files(id%2CmimeType%2Cname)",
-		//var name = encodeURI(in_folderName, "UTF-8");
-		RequestWithJWT({
-			url: "https://www.googleapis.com/drive/v3/files?q=mimeType%3D'application%2Fvnd.google-apps.folder'+and+name%3D'" + name + "'&fields=files(id%2CmimeType%2Cname)",
-			jwt: {
-				email: in_email,
-				keyFile: in_keyFile,
-				scopes: ['https://www.googleapis.com/auth/drive.readonly']
-			}
-		}, function (error, response, body) {
-			if (error != null){
-				deferred.reject("problem finding ID of folder:" + in_folderName + " error:" +  error);
-				return;
-			}
-			if (200 != response.statusCode){
-				deferred.reject("problem finding ID of folder:" + in_folderName + " statusCode:" +  response.statusCode);
-				return;
-			}
-			try {
-				//console.log(" body:" + body);
-				var data = JSON.parse(body);
-				if (data.files.length <= 0){
-					in_folderMetaDataMap[in_folderName] = null;
-					deferred.resolve(null);
-				}
-
-				//deferred.resolve(data.files[0]);
-
-				var fileIdToReturn = data.files[0];
-
-				var arrayPromice = [];
-				for (var index = 0; index < data.files.length; ++index){
-					arrayPromice.push(getMetaData(data.files[index].id, in_dataCache, in_authorization));
-				}
-
-				Q.allSettled(arrayPromice).then(function(input){ 
-					var result;
-					input.forEach(function (item) {
-						//console.log(" item:" + JSON.stringify(item));
-						if (item.state !== "fulfilled") {
-							console.log(item.reason);
-						} else {
-							if (false === ("parents" in item.value)){
-								//console.log("found one:" + JSON.stringify(item.value));
-								fileIdToReturn = item.value;
-							}
-						}
-					});
-					return fileIdToReturn; 
-				}).then(function(input){
-					//console.log("getFolderMetaDataByName input:" + JSON.stringify(input));
-					in_folderMetaDataMap[in_folderName] = input;
-					deferred.resolve(input);
-				}).done();
-
-
-			} catch(err) {
-				deferred.reject("problem finding ID of folder:" + in_folderName + " error:" +  err.message);
-			}
+		}).then(function(in_res){
+			console.log("getFolderMetaDataByName:" + JSON.parse(in_res));
 		});
 	}
 
@@ -154,32 +104,15 @@ const getMetaData = function(in_id, in_dataCache, in_authorization){
 		//console.log("gMetaDataDataMap found in_id:" + in_id);
 		deferred.resolve(in_metaDataDataMap[in_id]);
 	} else {
-		RequestWithJWT({
-			url: "https://www.googleapis.com/drive/v3/files/" + in_id + "?fields=id%2CmimeType%2Cname%2Cparents",
-			jwt: {
-				email: in_email,
-				keyFile: in_keyFile,
-				scopes: ['https://www.googleapis.com/auth/drive.readonly']
-			}
-		}, function (error, response, body) {
-			if (error != null){
-				deferred.reject("problem finding metadata for file:" + in_id + " error:" +  error);
-				return;
-			}
-			if (200 != response.statusCode){
-				deferred.reject("problem finding metadata for file:" + in_id + " statusCode:" +  response.statusCode);
-				return;
-			}
-			try {
-				//console.log("body:" + body);
-
-				var data = JSON.parse(body);
-				in_metaDataDataMap[in_id] = data;
-				deferred.resolve(data);
-			} catch(err) {
-				deferred.reject("problem finding metadata for file:" + in_id + " error:" +  err.message);
-			}
-		});
+		const drive = GoogleApis.google.drive({
+			version: "v3",
+			auth: in_authorization
+			});
+		var name = encodeURI(in_folderName, "UTF-8");
+		//"https://www.googleapis.com/drive/v3/files/" + in_id + "?fields=id%2CmimeType%2Cname%2Cparents",
+		//in_metaDataDataMap[in_id] = data;
+		//deferred.resolve(data);
+		deferred.reject("problem finding metadata for file:" + in_id + " error:" +  err.message);
 	}
 
 	return deferred.promise;
@@ -205,50 +138,10 @@ const getChildrenOfFolder = function(in_folderID, in_dataCache, in_authorization
 	if (in_folderID in in_childrenOfFolderDataMap){
 		deferred.resolve(in_childrenOfFolderDataMap[in_folderID]);
 	} else {
-		RequestWithJWT({
-			url: "https://www.googleapis.com/drive/v3/files?q='" + in_folderID + "'+in+parents&fields=files%2Fid",
-			jwt: {
-				email: in_email,
-				keyFile: in_keyFile,
-				scopes: ['https://www.googleapis.com/auth/drive.readonly']
-			}
-		}, function (error, response, body) {
-			console.log("getChildrenOfFolder in_folderID:" + in_folderID + " body:" + body);
-			if (error != null){
-				deferred.reject("problem finding children of folder:" + in_folderID + " error:" +  error);
-				return;
-			}
-			if (200 != response.statusCode){
-				deferred.reject("problem finding children of folder:" + in_folderID + " statusCode:" +  response.statusCode);
-				return;
-			}
-			//console.log(" body:" + body);
-			var data = JSON.parse(body);
-			try {
-				var arrayPromice = [];
-				for (var index = 0; index < data.files.length; ++index){
-					arrayPromice.push(getMetaData(data.files[index].id, in_dataCache, in_authorization));
-				}
-
-				Q.allSettled(arrayPromice).then(function(input){ 
-					var result = [];
-					input.forEach(function (item) {
-						if (item.state !== "fulfilled") {
-							console.log(item.reason);
-						} else {
-							result.push(item.value);
-						}
-					});
-					return result; 
-				}).then(function(input){
-					//console.log("polo input:" + JSON.stringify(input));
-					in_childrenOfFolderDataMap[in_folderID] = input;
-					deferred.resolve(input);
-				}).done();
-			} catch(err) {
-				deferred.reject("problem finding children of folder:" + in_folderID + " error:" +  err.message);
-			}
-		});
+		//url: "https://www.googleapis.com/drive/v3/files?q='" + in_folderID + "'+in+parents&fields=files%2Fid",
+		deferred.reject("problem finding children of folder:" + in_folderID + " error:" +  error);
+		//in_childrenOfFolderDataMap[in_folderID] = input;
+		//deferred.resolve(input);
 	}
 
 	return deferred.promise;
@@ -282,5 +175,6 @@ module.exports.getSpreadsheetWorksheet = function(in_spreadsheetID, in_worksheet
 			deferred.resolve(value);
 			return;
 		});
+	}
 	return deferred.promise;
 }
