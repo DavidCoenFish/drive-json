@@ -12,7 +12,7 @@ Q(DriveJson.DataServer.factoryPromise()).then(function(in_dataServer){
 	return DriveJson.DriveCursor.factoryResolvePromice(baseDriveCursor, "callofteabagnight/data:toc")
 }).then(function(in_driveCursor){
 	var cursor = DriveJson.Cursor();
-	return DriveJson.SheetToObject.sheet3rdToObject(dataServer, driveCursor, cursor, baseObject);
+	return DriveJson.SheetToObject.sheet5thToObject(dataServer, in_driveCursor, cursor, baseObject);
 }).then(function(){
 	DriveJson.Util.writeFilePromise("gamedata.json", baseObject);
 }).fail(function(error){

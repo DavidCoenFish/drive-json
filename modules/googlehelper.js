@@ -34,7 +34,7 @@ const MakeToken = function(in_oAuth2Client, in_pathToken){
 				return;
 			}
 
-			deferred.resolve(Util.writeFilePromise(JSON.stringify(token)));
+			deferred.resolve(Util.writeFilePromise(Jin_pathToken, SON.stringify(token)));
 		});
 	});
 	return deferred.promise;
@@ -152,12 +152,13 @@ module.exports.getFileList = function(in_dataCache, in_authorization){
 		auth: in_authorization
 		});
 	return drive.files.list({
+		auth: in_authorization,
 		corpora: "user",
 		fields: "files(id,name,parents,mimeType)"
 	}).then(function(in_res){
 		DealFiles(in_res.data.files, in_dataCache);
 	}).then(function(){
-		return getNameByID(in_dataCache.m_rootId);
+		return getNameByID(in_dataCache.m_rootId, in_authorization);
 	}).then(function(in_name){
 		if (undefined !== in_name){
 			in_dataCache.m_folderMetaDataMap[in_dataCache.m_rootId].name = in_name;
@@ -179,11 +180,12 @@ const getNameByID = function(in_id, in_authorization){
 		version: "v3",
 		auth: in_authorization
 		});
-	return drive.files.list({
-		id:in_id,
+	return drive.files.get({
+		auth: in_authorization,
+		fileId:in_id,
 		fields: "name"
 	}).then(function(in_res){
-		return in_res.name;
+		return in_res.data.name;
 	});
 }
 
@@ -196,13 +198,14 @@ module.exports.getSpreadsheetWorksheet = function(in_spreadsheetID, in_worksheet
 		//console.log("gSpreadsheetWorksheetDataMap found key:" + key);
 		return Q(in_spreadsheetWorksheetDataMap[key]);
 	}
-	const sheets = google.sheets({version: 'v4', auth});
+	const sheets = GoogleApis.google.sheets({version: 'v4', auth: in_authorization});
 	return sheets.spreadsheets.values.get({
+		auth: in_authorization,
 		spreadsheetId: in_spreadsheetID,
 		range: in_worksheetName
 	}).then(function(in_result){
 		var value = in_result.data.values;
 		in_spreadsheetWorksheetDataMap[key] = value;
-		return;
+		return value;
 	});
 }

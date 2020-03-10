@@ -120,7 +120,7 @@ DataServer.prototype.getFolderChildrenMetaDataArray = function(in_id){
 			}
 		}
 	}
-	return metaDataArray;
+	return Q(metaDataArray);
 };
 
 DataServer.prototype.getSpreadsheetWorksheetData = function(in_id, in_worksheetName){

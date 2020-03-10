@@ -86,6 +86,8 @@ https://docs.google.com/spreadsheets/d/1vyDCCFHque977LWJ07WuhZFdjDAGF7lGNZ5JDUd5
 
  */
 function listMajors(auth) {
+
+/*
   const sheets = google.sheets({version: 'v4', auth});
   sheets.spreadsheets.values.get({
     spreadsheetId: '1vyDCCFHque977LWJ07WuhZFdjDAGF7lGNZ5JDUd5D54',
@@ -94,7 +96,7 @@ function listMajors(auth) {
     if (err) return console.log('The API returned an error: ' + err);
     console.log(JSON.stringify(res.data.values));
   });
-
+*/
 /*
 	const drive = google.drive({
 		version: 'v3',
@@ -107,18 +109,18 @@ function listMajors(auth) {
 		console.log(JSON.stringify(res));
 	});
 */
-
-/*
+	//OAuth2Client {_events: Object, _eventsCount: 0, _
 	const drive = google.drive({
 		version: 'v3',
 		auth
 		});
 	drive.drives.list({
+		auth
 	}, (err, res) => {
 		if (err) return console.log('The API returned an error: ' + err);
 		console.log(JSON.stringify(res));
 	});
-*/
+
 
 	console.log("end");
 }
