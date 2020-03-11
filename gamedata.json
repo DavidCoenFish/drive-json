@@ -1,0 +1,108 @@
+{
+	"version": "0.0.1",
+	"creatures": {
+		"rat": {
+			"health": 2,
+			"def_mellee_hand": 1,
+			"def_mellee_weapon": 1,
+			"def_range": 0.5,
+			"max_move": 10,
+			"jump_height": 0.5,
+			"height": 0.125,
+			"damage_mellee_hand": 0.25,
+			"damage_mellee_weapon": 1
+		},
+		"chicken": {
+			"health": 3,
+			"def_mellee_hand": 1,
+			"def_mellee_weapon": 1,
+			"def_range": 1,
+			"max_move": 7,
+			"jump_height": 2,
+			"height": 0.25,
+			"damage_mellee_hand": 0.1,
+			"damage_mellee_special": 1,
+			"damage_mellee_weapon": 1
+		},
+		"cat": {
+			"health": 5,
+			"def_mellee_hand": 1,
+			"def_mellee_weapon": 1,
+			"def_range": 1,
+			"max_move": 9,
+			"jump_height": 2,
+			"height": 0.4,
+			"damage_mellee_hand": 2,
+			"damage_mellee_weapon": 1.5
+		},
+		"sheep": {
+			"health": 8,
+			"def_mellee_hand": 0.2,
+			"def_mellee_weapon": 0.2,
+			"def_range": 1,
+			"max_move": 4,
+			"jump_height": 0.5,
+			"height": 0.6,
+			"damage_mellee_hand": 0.5,
+			"damage_mellee_weapon": 1
+		},
+		"dog": {
+			"health": 13,
+			"def_mellee_hand": 0,
+			"def_mellee_weapon": 1,
+			"def_range": 1,
+			"max_move": 8,
+			"jump_height": 1.5,
+			"height": 0.5,
+			"damage_mellee_hand": 1,
+			"damage_mellee_weapon": 2
+		},
+		"bear": {
+			"health": 21,
+			"def_mellee_hand": 0.5,
+			"def_mellee_weapon": 1,
+			"def_range": 1,
+			"max_move": 5,
+			"jump_height": 0.375,
+			"height": 2,
+			"damage_mellee_hand": 4,
+			"damage_mellee_weapon": 4
+		},
+		"elephant": {
+			"health": 34,
+			"def_mellee_hand": 0.25,
+			"def_mellee_weapon": 1,
+			"def_range": 1,
+			"max_move": 3,
+			"jump_height": 0.25,
+			"height": 3,
+			"damage_mellee_hand": 8,
+			"damage_mellee_weapon": 4
+		},
+		"gate": {
+			"health": 55,
+			"def_mellee_hand": 0,
+			"def_mellee_weapon": 0.5,
+			"def_range": 1,
+			"max_move": 6,
+			"jump_height": 5,
+			"height": 5,
+			"damage_mellee_hand": 20,
+			"damage_mellee_special": 2,
+			"damage_mellee_weapon": 1
+		}
+	},
+	"game": {
+		"vfov_degrees": 90,
+		"flick_duration": 0.2,
+		"tap_duration": 0.2
+	},
+	"ghost": {
+		"top_speed_horizontal": 5,
+		"on_move_release_horizontal_dampen": 1.5,
+		"jump_speed": 3,
+		"jump_speed_dampen": 1.5,
+		"down_speed": 2,
+		"on_down_release_dampen": 2
+	}
+}

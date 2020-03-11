@@ -14,7 +14,7 @@ Q(DriveJson.DataServer.factoryPromise()).then(function(in_dataServer){
 	var cursor = DriveJson.Cursor();
 	return DriveJson.SheetToObject.sheet5thToObject(dataServer, in_driveCursor, cursor, baseObject);
 }).then(function(){
-	DriveJson.Util.writeFilePromise("gamedata.json", baseObject);
+	return DriveJson.Util.writeFilePromise("gamedata.json", JSON.stringify(baseObject, null, '\t'));
 }).fail(function(error){
 	console.log("error:" + error);
 	process.exit(1); //error

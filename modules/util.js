@@ -13,14 +13,17 @@ module.exports.writeFilePromise = function(in_filePath, in_data){
 		if (err.code !== 'EEXIST') throw err
 	}
 
-	FileSystem.writeFile(in_filePath, in_data, function(error) {
-		if(error) {
-			deferred.reject("writeFilePromise:" + in_filePath + " error:" +  error);
-			return;
-		}
-		deferred.resolve(null);
-	}); 
-
+	try {
+		FileSystem.writeFile(in_filePath, in_data, function(error) {
+			if(error) {
+				deferred.reject("writeFilePromise:" + in_filePath + " error:" +  error);
+				return;
+			}
+			deferred.resolve(true);
+		}); 
+	} catch (error) {
+		deferred.reject(error);
+	}
 	return deferred.promise;
 }
 
