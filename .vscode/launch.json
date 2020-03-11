@@ -49,6 +49,20 @@
 			"port": 5858
 		},
 
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "callofteabagnightlocale",
+			"runtimeExecutable": "npm",
+			"windows": {
+				"runtimeExecutable": "npm.cmd"
+			},
+			"runtimeArgs": [
+				"run-script",
+				"callofteabagnightlocale_vsc"
+			],
+			"port": 5858
+		},
 
 		
 	]

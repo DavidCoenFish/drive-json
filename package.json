@@ -6,7 +6,8 @@
 	"scripts": {
 		"test_vsc": "node --nolazy --inspect-brk=5858 bin/unittest",
 		"networktest_vsc": "node --nolazy --inspect-brk=5858 bin/networktest",
-		"callofteabagnight_vsc": "node --nolazy --inspect-brk=5858 bin/callofteabagnight"
+		"callofteabagnight_vsc": "node --nolazy --inspect-brk=5858 bin/callofteabagnight",
+		"callofteabagnightlocale_vsc": "node --nolazy --inspect-brk=5858 bin/callofteabagnightlocale"
 	},
 	"keywords": [],
 	"author": "David Coen",
