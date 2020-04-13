@@ -8,9 +8,11 @@ const ActionEnum = Object.freeze({
 	"float":2,
 	"bool":3,
 	"string":4,
-	"sheet3rd":5,
+	"sheet3rd":5, //make a map, obliges an _id string to use as map key
 	"sheet5th":6,
 	"sheet3rdKeyValue":7,
+	"sheet3rdArray":8, //makes an array of objects
+
 	//"dataset" //used as token but not action, collects all into array then does comparison with cursor data set, and if no common, ignore
 	//"array_auto":2 //nope, wont work, data design is reentrant
 });
@@ -43,6 +45,8 @@ const dealKey = function (in_key, in_cursor, in_baseObject, in_driveCursor, in_i
 			action = ActionEnum.sheet5th;
 		} else if (token == "sheet3rdKeyValue"){
 			action = ActionEnum.sheet3rdKeyValue;
+		} else if (token == "sheet3rdArray"){
+			action = ActionEnum.sheet3rdArray;
 		} else if (token == "array"){
 			if (false == nameSet){
 				console.log("need name before array in key:" + in_key + " sheetId:" + in_driveCursor.getFullPath());
@@ -146,9 +150,47 @@ const consumeCell = function(in_arrayPromice, in_dataServer, in_driveCursor, in_
 				return sheet3rdKeyValueToObject(in_dataServer, driveCursor, in_cursor, in_baseObject);
 			}));
 			break;
+		case ActionEnum.sheet3rdArray:
+			in_arrayPromice.push(DriveCursor.factoryResolvePromice(in_driveCursor, in_cell).then(function(driveCursor){
+				return sheet3rdArrayToObject(in_dataServer, driveCursor, in_cursor, in_baseObject);
+			}));
+			break;
 	}
 	return;
 }
+
+const sheet3rdArrayNormalisedRow = function(in_arrayPromice, in_dataServer, in_driveCursor, in_cursor, in_baseObject, in_keyRow, in_row, in_rowIndex){
+	if ((in_keyRow == null) || (in_row == null)) {
+		return;
+	}
+
+	if ((in_keyRow.length <= 0) || (in_row.length <= 0)) {
+		return;
+	}
+
+	//GetArrayLength
+	var localCursor = in_cursor.Clone();
+	var index = in_cursor.GetArrayLength(in_baseObject);
+	localCursor.PushArray(index);
+	localCursor.SetValue({}, in_baseObject);
+
+	for (var columnIndex = 0, length = in_keyRow.length; columnIndex < length; columnIndex++) {
+		var key = in_keyRow[columnIndex];
+
+		var localCursorInner = localCursor.Clone();
+		var action = dealKey(key, localCursorInner, in_baseObject, in_driveCursor);
+		if (ActionEnum.ignore == action){
+			continue;
+		}
+		//var cell = "";
+		if (columnIndex < in_row.length){
+			var cell = in_row[columnIndex];
+			consumeCell(in_arrayPromice, in_dataServer, in_driveCursor, localCursorInner, in_baseObject, action, cell);
+		}
+	}
+	return;
+}
+
 
 const sheet3rdNormalisedRow = function(in_arrayPromice, in_dataServer, in_driveCursor, in_cursor, in_baseObject, in_keyRow, in_row, in_rowIndex){
 	if ((in_keyRow == null) || (in_row == null)) {
@@ -246,8 +288,52 @@ const sheet5thNormalisedRow = function(in_arrayPromice, in_dataServer, in_driveC
 }
 
 /*
-	3rd normalised form
+	3rd normalised form to array of objects
+	[[key1,....],[dataA1,..],[dataB1,...],...]
+	=> [ { key1 : dataA1, ... }, { key1 : dataB1, ... }, ... ]
+*/
+
+const sheet3rdArrayToObject = function(in_dataServer, in_driveCursor, in_cursor, in_baseObject){
+	return in_dataServer.getSpreadsheetWorksheetData(in_driveCursor.getId(), in_driveCursor.getWorksheet()).then(function(input){
+		if (input == null){
+			console.log("null spreadsheet:" + in_driveCursor.getFullPath());
+			return in_baseObject;
+		}
+		//console.log("sheet3rdToObject input:" + JSON.stringify(input));
+		var arrayPromice = [];
+		if (input.length <= 0){
+			console.log("empty spreadsheet:" + in_driveCursor.getFullPath());
+			return in_baseObject;
+		}
+		var keyRow = input[0];
+		if ((keyRow == null) || (keyRow.length <= 0)){
+			console.log("empty key row spreadsheet:" + in_driveCursor.getFullPath());
+			return in_baseObject;
+		}
+
+		for (var rowIndex = 1, length = input.length; rowIndex < length; rowIndex++) {
+			var row = input[rowIndex];
+			sheet3rdArrayNormalisedRow(arrayPromice, in_dataServer, in_driveCursor, in_cursor, in_baseObject, keyRow, row, rowIndex);
+		}
+
+		return Q.allSettled(arrayPromice).then(function(input){ 
+			input.forEach(function (result) {
+				if (result.state !== "fulfilled") {
+					console.log(result.reason);
+					throw result.reason;
+				}
+			});
+			return in_baseObject; 
+		});
+	});
+}
+module.exports.sheet3rdArrayToObject = sheet3rdArrayToObject;
+
+
+/*
+	3rd normalised form to map of objects
 	[[_id,key1,....],[idA0,dataA1,..],[idB0,dataB1,...],...]
+	=> { idA0 : { key1 : dataA1, ... }, idB0 : { key1 : dataB1, ... }, ... }
 */
 const sheet3rdToObject = function(in_dataServer, in_driveCursor, in_cursor, in_baseObject){
 	//console.log("sheet3rdToObject in_sheetId:" + in_sheetId + " in_worksheetName:" + in_worksheetName);
